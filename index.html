@@ -91,6 +91,21 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .search::placeholder{color:var(--dim)}
 .disc{font-size:11.5px;color:var(--dim);line-height:1.6;border-top:1px solid var(--line);
   margin-top:40px;padding-top:18px}
+.mrow{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.mfield{display:flex;flex-direction:column;gap:6px;flex:1 1 220px}
+.mlab{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);font-weight:700}
+.sel{padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--ink);font-family:inherit;font-size:14px;width:100%}
+.mcheck{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);
+  padding-bottom:10px;white-space:nowrap}
+.mcheck input{width:16px;height:16px;accent-color:var(--accent)}
+.result{text-align:center;padding:26px 18px}
+.r-fav{font-size:32px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.r-sub{font-size:13px;color:var(--muted)}
+.r-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;
+  margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+.r-k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700}
+.r-v{font-size:20px;font-weight:750;margin-top:4px;font-variant-numeric:tabular-nums}
 .view{display:none} .view.on{display:block}
 .iframe-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
   background:#fff;height:78vh}
@@ -119,7 +134,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
       <button class="nav-item" data-v="power"><span class="ico">&#9632;</span>Power Ratings</button>
       <button class="nav-item" data-v="record"><span class="ico">&#10003;</span>Track Record</button>
       <button class="nav-item" data-v="sched"><span class="ico">&#9678;</span>Schedule</button>
-      <div class="nav-item soon"><span class="ico">&#9636;</span>Matchup<span class="tag">soon</span></div>
+      <button class="nav-item" data-v="matchup"><span class="ico">&#9636;</span>Matchup</button>
       <div class="nav-item soon"><span class="ico">&#10010;</span>Injuries<span class="tag">soon</span></div>
       <div class="nav-item soon"><span class="ico">&#9733;</span>Subscribe<span class="tag">soon</span></div>
     </nav>
@@ -143,6 +158,20 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
           <a id="ledgerLink" href="#" target="_blank" rel="noopener">Check the record &rarr;</a>
         </p>
       </div>
+    </section>
+
+    <!-- MATCHUP -->
+    <section class="view" id="v-matchup">
+      <div class="panel">
+        <div class="mrow">
+          <label class="mfield"><span class="mlab">Away</span>
+            <select class="sel" id="awaySel"></select></label>
+          <label class="mfield"><span class="mlab">Home</span>
+            <select class="sel" id="homeSel"></select></label>
+          <label class="mcheck"><input type="checkbox" id="neutralChk"> Neutral site</label>
+        </div>
+      </div>
+      <div class="panel result" id="mResult"></div>
     </section>
 
     <!-- POWER RATINGS -->
@@ -181,9 +210,64 @@ const j=async f=>{try{const r=await fetch(f+'?t='+Date.now());return r.ok?await 
 const TITLES={bets:['Best Bets','Free plays for the upcoming week'],
               power:['Power Ratings','Points versus an average FBS team'],
               record:['Track Record','Published before kickoff, verifiable by anyone'],
-              sched:['Schedule','Upcoming games and posted numbers']};
+              sched:['Schedule','Upcoming games and posted numbers'],
+              matchup:['Matchup','Any two teams, priced by the model']};
 
-let META={}, RATINGS=[], BETS=[], SCHED=[];
+let META={}, RATINGS=[], BETS=[], SCHED=[], COMP=null;
+
+// The model is exactly additive and antisymmetric in the two teams, so a
+// prediction is one subtraction:
+//     pred = V[home] - V[away] + (neutral ? 0 : home_bonus)
+// V ships already converted to points, so no coefficient is ever in the page.
+function predict(home, away, neutral){
+  if(!COMP || !COMP.V) return null;
+  const vh=COMP.V[home], va=COMP.V[away];
+  if(vh==null||va==null) return null;
+  return vh - va + (neutral ? 0 : COMP.home_bonus);
+}
+// Win probability comes from a sampled curve, not from coefficients.
+function winProb(margin){
+  if(!COMP||!COMP.wp||!COMP.wp.length) return null;
+  const i=Math.round((margin - COMP.wp_from)/COMP.wp_step);
+  return COMP.wp[Math.max(0, Math.min(COMP.wp.length-1, i))];
+}
+function fav(margin, home, away){
+  if(Math.abs(margin) < 0.05) return {name:'Pick&rsquo;em', by:0};
+  return margin>0 ? {name:home, by:margin} : {name:away, by:-margin};
+}
+function renderMatchup(){
+  const home=document.getElementById('homeSel').value,
+        away=document.getElementById('awaySel').value,
+        neu=document.getElementById('neutralChk').checked;
+  const el=document.getElementById('mResult');
+  if(home===away){ el.innerHTML='<div class="empty">Pick two different teams.</div>'; return; }
+  const m=predict(home,away,neu);
+  if(m==null){ el.innerHTML='<div class="empty">No rating available for one of those teams.</div>'; return; }
+  const f=fav(m,home,away);
+  const wp=winProb(m); const wpShown = wp==null?null:(m>=0?wp:1-wp);
+  el.innerHTML=
+    `<div class="r-fav">${f.by?esc(f.name)+' by '+f.by.toFixed(1):'Pick&rsquo;em'}</div>
+     <div class="r-sub">${esc(away)} at ${esc(home)}${neu?' &middot; neutral site':''}</div>
+     <div class="r-grid">
+       <div><div class="r-k">Model line</div><div class="r-v">${m>0?'-':'+'}${Math.abs(m).toFixed(1)}</div></div>
+       <div><div class="r-k">Win prob</div><div class="r-v">${wpShown==null?'—':(100*wpShown).toFixed(0)+'%'}</div></div>
+       <div><div class="r-k">Home field</div><div class="r-v">${neu?'0.0':'+'+COMP.home_bonus.toFixed(1)}</div></div>
+     </div>`;
+}
+function initMatchup(){
+  if(!COMP||!COMP.teams||!COMP.teams.length) return;
+  const names=COMP.teams.map(t=>t.team).sort((a,b)=>a.localeCompare(b));
+  const opts=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  const hs=document.getElementById('homeSel'), as=document.getElementById('awaySel');
+  hs.innerHTML=opts; as.innerHTML=opts;
+  // Default to a real upcoming game so the view is never empty on arrival.
+  if(SCHED.length){ hs.value=SCHED[0].home; as.value=SCHED[0].away;
+    document.getElementById('neutralChk').checked=!!SCHED[0].neutral; }
+  else { hs.value=names[0]; as.value=names[1]||names[0]; }
+  [hs,as,document.getElementById('neutralChk')].forEach(e=>
+    e.addEventListener('change',renderMatchup));
+  renderMatchup();
+}
 
 function show(v){
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on', s.id==='v-'+v));
@@ -247,9 +331,14 @@ function renderSched(){
 }
 
 (async function(){
-  const [meta,ratings,bets,sched]=await Promise.all(
-    [j('data/meta.json'),j('data/ratings.json'),j('data/bestbets.json'),j('data/schedule.json')]);
+  const [meta,ratings,bets,sched,comp]=await Promise.all(
+    [j('data/meta.json'),j('data/ratings.json'),j('data/bestbets.json'),
+     j('data/schedule.json'),j('data/components.json')]);
   META=meta||{}; RATINGS=ratings||[]; BETS=bets||[]; SCHED=sched||[];
+  if(comp && comp.teams){
+    COMP=comp;
+    COMP.V=Object.fromEntries(comp.teams.map(t=>[t.team,t.v]));
+  }
 
   $('kpis').innerHTML=
      `<div class="kpi"><div class="kpi-l">Margin error</div>
@@ -268,7 +357,7 @@ function renderSched(){
   $('ledgerLink').href=META.ledger||'#';
   $('ledgerLink2').href=META.ledger||'#';
   $('foot').innerHTML=`Updated ${esc((META.generated||'').slice(0,10))}<br>Season ${esc(META.season||'')}`;
-  renderBets(); renderPower(''); renderSched();
+  renderBets(); renderPower(''); renderSched(); initMatchup();
   const h=(location.hash||'').replace('#','');
   show(TITLES[h]?h:'bets');
 })();
