@@ -149,7 +149,6 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
     <section class="view" id="v-power">
       <input class="search" id="teamSearch" placeholder="Filter teams…" autocomplete="off">
       <div class="panel scroll" id="powerBody"></div>
-      <p class="note" id="powerNote"></p>
     </section>
 
     <!-- TRACK RECORD -->
@@ -264,15 +263,11 @@ function renderSched(){
         <div class="kpi-s">${META.val_seasons||'—'} seasons · ${META.teams||'—'} teams</div></div>
       <div class="kpi"><div class="kpi-l">Week</div>
         <div class="kpi-v">${META.week!=null?META.week:'—'}</div>
-        <div class="kpi-s">${esc(META.ratings_mix||'')}</div></div>`;
+        <div class="kpi-s">${esc(META.season||'')} season</div></div>`;
 
   $('ledgerLink').href=META.ledger||'#';
   $('ledgerLink2').href=META.ledger||'#';
   $('foot').innerHTML=`Updated ${esc((META.generated||'').slice(0,10))}<br>Season ${esc(META.season||'')}`;
-  $('powerNote').textContent=
-    `Week ${META.ratings_week} ratings — ${META.ratings_mix}. Early-season numbers and `
-    +`late-season numbers are not the same measurement; the mix says which you are reading.`;
-
   renderBets(); renderPower(''); renderSched();
   const h=(location.hash||'').replace('#','');
   show(TITLES[h]?h:'bets');
