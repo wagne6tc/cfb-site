@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CFB Model</title>
+<style>
+:root{
+  --bg:#0d1014; --panel:#151a21; --panel2:#1a212a; --line:#242c37;
+  --ink:#e8ecf2; --muted:#9aa3b1; --dim:#69727f;
+  --accent:#3ddc84; --accent-dk:#2bb96b;
+  --win:#3ddc84; --loss:#ff6b7f; --warn:#f0b429;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+
+/* ---- shell ---- */
+.shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.side{background:#0a0d11;border-right:1px solid var(--line);padding:22px 16px;
+  position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:26px;padding:0 6px}
+.mark{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#08120c;
+  display:grid;place-items:center;font-weight:800;font-size:17px}
+.brand-t{font-weight:800;letter-spacing:-.02em;font-size:16px}
+.brand-t span{color:var(--accent)}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;
+  color:var(--muted);font-size:14px;cursor:pointer;border:0;background:none;
+  font-family:inherit;text-align:left;width:100%}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--ink)}
+.nav-item.on{background:rgba(61,220,132,.11);color:var(--accent);font-weight:650}
+.nav-item .ico{width:18px;text-align:center;font-size:13px;opacity:.9}
+.nav-item .tag{margin-left:auto;font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:2px 5px}
+.nav-item.soon{color:var(--dim);cursor:default}
+.nav-item.soon:hover{background:none;color:var(--dim)}
+.side-foot{margin-top:26px;padding:0 8px;font-size:11px;color:var(--dim);line-height:1.5}
+
+/* ---- main ---- */
+.main{padding:30px 34px 90px;max-width:1080px}
+.eyebrow{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+h1{font-size:30px;margin:7px 0 4px;letter-spacing:-.025em}
+.sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+h2{font-size:16px;margin:30px 0 12px;letter-spacing:-.01em}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+  margin-bottom:26px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px}
+.kpi-l{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);font-weight:700}
+.kpi-v{font-size:25px;font-weight:750;letter-spacing:-.02em;margin-top:5px;
+  font-variant-numeric:tabular-nums}
+.kpi-s{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;margin-bottom:16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:13px}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.gcard-top{display:flex;align-items:center;margin-bottom:9px}
+.gcard-kind{font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--dim);font-weight:750}
+.gcard-badge{margin-left:auto;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+  font-weight:700;padding:3px 8px;border-radius:5px;
+  background:rgba(139,147,161,.14);color:var(--muted)}
+.gcard-match{font-weight:700;font-size:15.5px;letter-spacing:-.01em;margin-bottom:8px}
+.gcard-pick{font-size:13px;color:var(--muted)}
+.gcard-pick b{color:var(--accent);font-size:15px;font-weight:750}
+.stars{font-size:26px;letter-spacing:5px;color:var(--accent);margin-top:11px;line-height:1}
+.stars .dim{color:rgba(154,163,177,.22)}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+  font-weight:700;padding:0 11px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px 11px;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rk{color:var(--dim);font-weight:700}
+.pos{color:var(--win)} .neg{color:var(--loss)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.note{font-size:12.5px;color:var(--muted)}
+.empty{color:var(--muted);padding:18px 0;font-size:14px}
+.search{width:100%;max-width:280px;padding:9px 12px;border-radius:9px;
+  border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+  font-family:inherit;font-size:13.5px;margin-bottom:13px}
+.search::placeholder{color:var(--dim)}
+.disc{font-size:11.5px;color:var(--dim);line-height:1.6;border-top:1px solid var(--line);
+  margin-top:40px;padding-top:18px}
+.view{display:none} .view.on{display:block}
+.iframe-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  background:#fff;height:78vh}
+.iframe-wrap iframe{width:100%;height:100%;border:0;display:block}
+
+@media(max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .nav{flex-direction:row;flex-wrap:wrap}
+  .nav-item{width:auto}
+  .side-foot{display:none}
+  .main{padding:22px 16px 70px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="side">
+    <div class="brand">
+      <div class="mark">C</div>
+      <div class="brand-t">CFB<span>MODEL</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item on" data-v="bets"><span class="ico">&#9873;</span>Best Bets</button>
+      <button class="nav-item" data-v="power"><span class="ico">&#9632;</span>Power Ratings</button>
+      <button class="nav-item" data-v="record"><span class="ico">&#10003;</span>Track Record</button>
+      <button class="nav-item" data-v="sched"><span class="ico">&#9678;</span>Schedule</button>
+      <div class="nav-item soon"><span class="ico">&#9636;</span>Matchup<span class="tag">soon</span></div>
+      <div class="nav-item soon"><span class="ico">&#10010;</span>Injuries<span class="tag">soon</span></div>
+      <div class="nav-item soon"><span class="ico">&#9733;</span>Subscribe<span class="tag">soon</span></div>
+    </nav>
+    <div class="side-foot" id="foot"></div>
+  </aside>
+
+  <main class="main">
+    <div class="eyebrow">Predictive Model</div>
+    <h1 id="title">Best Bets</h1>
+    <p class="sub" id="subtitle"></p>
+
+    <div class="kpis" id="kpis"></div>
+
+    <!-- BEST BETS -->
+    <section class="view on" id="v-bets">
+      <div id="betsBody"></div>
+      <div class="panel" style="margin-top:16px">
+        <p class="note" style="margin:0">
+          Free plays are published <strong>before kickoff</strong> and recorded in the
+          public ledger, so they cannot be changed afterwards.
+          <a id="ledgerLink" href="#" target="_blank" rel="noopener">Check the record &rarr;</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- POWER RATINGS -->
+    <section class="view" id="v-power">
+      <input class="search" id="teamSearch" placeholder="Filter teams…" autocomplete="off">
+      <div class="panel scroll" id="powerBody"></div>
+      <p class="note" id="powerNote"></p>
+    </section>
+
+    <!-- TRACK RECORD -->
+    <section class="view" id="v-record">
+      <p class="note" style="margin-bottom:13px">
+        Every pick, hash-chained and timestamped before kickoff. Served live from the
+        public ledger — <a id="ledgerLink2" href="#" target="_blank" rel="noopener">open it directly &rarr;</a>
+      </p>
+      <div class="iframe-wrap"><iframe id="ledgerFrame" title="Track record" loading="lazy"></iframe></div>
+    </section>
+
+    <!-- SCHEDULE -->
+    <section class="view" id="v-sched">
+      <div class="panel scroll" id="schedBody"></div>
+    </section>
+
+    <p class="disc">
+      An ATS and totals prediction model. This is not financial or betting advice — it is
+      a tool for recreational use only, and nothing here guarantees any outcome.
+      Past performance does not predict future results.
+    </p>
+  </main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const j=async f=>{try{const r=await fetch(f+'?t='+Date.now());return r.ok?await r.json():null;}catch(e){return null;}};
+
+const TITLES={bets:['Best Bets','Free plays for the upcoming week'],
+              power:['Power Ratings','Points versus an average FBS team'],
+              record:['Track Record','Published before kickoff, verifiable by anyone'],
+              sched:['Schedule','Upcoming games and posted numbers']};
+
+let META={}, RATINGS=[], BETS=[], SCHED=[];
+
+function show(v){
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on', s.id==='v-'+v));
+  document.querySelectorAll('#nav .nav-item[data-v]').forEach(b=>b.classList.toggle('on', b.dataset.v===v));
+  const t=TITLES[v]||['',''];
+  $('title').textContent=t[0]; $('subtitle').textContent=t[1];
+  // The ledger page is a separate deploy; only load it when actually viewed.
+  if(v==='record'){ const f=$('ledgerFrame'); if(!f.src) f.src=META.ledger||''; }
+  history.replaceState(null,'','#'+v);
+}
+document.querySelectorAll('#nav .nav-item[data-v]').forEach(b=>
+  b.addEventListener('click',()=>show(b.dataset.v)));
+
+function starHTML(n){
+  n=Math.max(0,Math.min(3,+n||0));
+  return '★'.repeat(n)+'<span class="dim">'+'★'.repeat(3-n)+'</span>';
+}
+
+function renderBets(){
+  if(!BETS.length){
+    $('betsBody').innerHTML='<div class="panel"><div class="empty">'
+      +'No plays published for this week yet. The card is written before the first kickoff.'
+      +'</div></div>'; return;
+  }
+  const sides=BETS.filter(b=>b.kind==='SIDE'), totals=BETS.filter(b=>b.kind==='TOTAL');
+  const card=b=>`<div class="gcard">
+      <div class="gcard-top"><span class="gcard-kind">${esc(b.kind)}</span>
+        <span class="gcard-badge">${b.validated?'validated':'free play'}</span></div>
+      <div class="gcard-match">${esc(b.away)} at ${esc(b.home)}</div>
+      <div class="gcard-pick">Pick <b>${esc(b.pick)}</b></div>
+      <div class="stars">${starHTML(b.stars)}</div></div>`;
+  let h='';
+  if(sides.length)  h+=`<h2>Sides</h2><div class="cards">${sides.map(card).join('')}</div>`;
+  h+='<h2>Totals</h2>'+(totals.length
+      ? `<div class="cards">${totals.map(card).join('')}</div>`
+      : `<div class="panel"><div class="note">No totals available week ${esc(META.week)}.</div></div>`);
+  $('betsBody').innerHTML=h;
+}
+
+function renderPower(filter){
+  const f=(filter||'').trim().toLowerCase();
+  const rows=RATINGS.filter(r=>!f||r.team.toLowerCase().includes(f));
+  if(!rows.length){ $('powerBody').innerHTML='<div class="empty">No teams match that filter.</div>'; return; }
+  $('powerBody').innerHTML=`<table><thead><tr>
+      <th style="width:52px">Rank</th><th>Team</th>
+      <th class="num" style="text-align:right">Rating</th></tr></thead><tbody>`
+    + rows.map(r=>`<tr><td class="num rk">${r.rank}</td><td>${esc(r.team)}</td>
+        <td class="num ${r.rating>=0?'pos':'neg'}" style="text-align:right;font-weight:700">
+        ${r.rating>0?'+':''}${r.rating.toFixed(1)}</td></tr>`).join('')
+    + '</tbody></table>';
+}
+$('teamSearch').addEventListener('input',e=>renderPower(e.target.value));
+
+function renderSched(){
+  if(!SCHED.length){ $('schedBody').innerHTML='<div class="empty">No upcoming games.</div>'; return; }
+  $('schedBody').innerHTML='<table><thead><tr><th>Kickoff</th><th>Game</th><th>Venue</th></tr></thead><tbody>'
+    + SCHED.map(g=>`<tr><td class="num">${esc((g.kickoff||'').slice(0,10))}</td>
+        <td>${esc(g.away)} at ${esc(g.home)}</td>
+        <td class="note">${g.neutral?'Neutral site':'—'}</td></tr>`).join('')
+    + '</tbody></table>';
+}
+
+(async function(){
+  const [meta,ratings,bets,sched]=await Promise.all(
+    [j('data/meta.json'),j('data/ratings.json'),j('data/bestbets.json'),j('data/schedule.json')]);
+  META=meta||{}; RATINGS=ratings||[]; BETS=bets||[]; SCHED=sched||[];
+
+  $('kpis').innerHTML=
+     `<div class="kpi"><div class="kpi-l">Margin error</div>
+        <div class="kpi-v">${META.mae!=null?META.mae:'—'}</div>
+        <div class="kpi-s">mean absolute, out of sample</div></div>
+      <div class="kpi"><div class="kpi-l">Straight up</div>
+        <div class="kpi-v">${META.su!=null?META.su+'%':'—'}</div>
+        <div class="kpi-s">winner called correctly</div></div>
+      <div class="kpi"><div class="kpi-l">Games rated</div>
+        <div class="kpi-v">${META.games!=null?META.games.toLocaleString():'—'}</div>
+        <div class="kpi-s">${META.val_seasons||'—'} seasons · ${META.teams||'—'} teams</div></div>
+      <div class="kpi"><div class="kpi-l">Week</div>
+        <div class="kpi-v">${META.week!=null?META.week:'—'}</div>
+        <div class="kpi-s">${esc(META.ratings_mix||'')}</div></div>`;
+
+  $('ledgerLink').href=META.ledger||'#';
+  $('ledgerLink2').href=META.ledger||'#';
+  $('foot').innerHTML=`Updated ${esc((META.generated||'').slice(0,10))}<br>Season ${esc(META.season||'')}`;
+  $('powerNote').textContent=
+    `Week ${META.ratings_week} ratings — ${META.ratings_mix}. Early-season numbers and `
+    +`late-season numbers are not the same measurement; the mix says which you are reading.`;
+
+  renderBets(); renderPower(''); renderSched();
+  const h=(location.hash||'').replace('#','');
+  show(TITLES[h]?h:'bets');
+})();
+</script>
+</body>
+</html>
