@@ -106,6 +106,23 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
 .r-k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700}
 .r-v{font-size:20px;font-weight:750;margin-top:4px;font-variant-numeric:tabular-nums}
+.rosters{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.roster{padding:14px;max-height:420px;overflow-y:auto}
+.rlab{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);
+  font-weight:700;margin-bottom:10px;position:sticky;top:-14px;background:var(--panel);
+  padding:4px 0}
+.prow{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px;
+  border-bottom:1px solid rgba(36,44,55,.6)}
+.prow:last-child{border-bottom:none}
+.prow input{width:15px;height:15px;accent-color:var(--loss);flex:0 0 auto;cursor:pointer}
+.prow .pp{font-size:9.5px;letter-spacing:.06em;color:var(--dim);font-weight:700;
+  width:26px;flex:0 0 auto}
+.prow .pn{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prow .pv{font-variant-numeric:tabular-nums;color:var(--muted);flex:0 0 auto;font-size:12.5px}
+.prow.out .pn{text-decoration:line-through;color:var(--dim)}
+.prow.out .pv{color:var(--loss);font-weight:700}
+.adjnote{font-size:12.5px;color:var(--warn);margin-top:9px}
+@media(max-width:720px){.rosters{grid-template-columns:1fr}}
 .view{display:none} .view.on{display:block}
 .iframe-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
   background:#fff;height:78vh}
@@ -134,8 +151,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
       <button class="nav-item" data-v="power"><span class="ico">&#9632;</span>Power Ratings</button>
       <button class="nav-item" data-v="record"><span class="ico">&#10003;</span>Track Record</button>
       <button class="nav-item" data-v="sched"><span class="ico">&#9678;</span>Schedule</button>
-      <button class="nav-item" data-v="matchup"><span class="ico">&#9636;</span>Matchup</button>
-      <div class="nav-item soon"><span class="ico">&#10010;</span>Injuries<span class="tag">soon</span></div>
+      <button class="nav-item" data-v="matchup"><span class="ico">&#9636;</span>Matchup &amp; Injuries</button>
       <div class="nav-item soon"><span class="ico">&#9733;</span>Subscribe<span class="tag">soon</span></div>
     </nav>
     <div class="side-foot" id="foot"></div>
@@ -172,6 +188,14 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
         </div>
       </div>
       <div class="panel result" id="mResult"></div>
+      <h2>Availability</h2>
+      <p class="note" id="injNote">Tick a starter to price the game without them.
+        Injuries are not in the model &mdash; this is your adjustment, and it is
+        never part of the published record.</p>
+      <div class="rosters">
+        <div class="panel roster"><div class="rlab" id="awayLab">Away</div><div id="awayRoster"></div></div>
+        <div class="panel roster"><div class="rlab" id="homeLab">Home</div><div id="homeRoster"></div></div>
+      </div>
     </section>
 
     <!-- POWER RATINGS -->
@@ -211,7 +235,7 @@ const TITLES={bets:['Best Bets','Free plays for the upcoming week'],
               power:['Power Ratings','Points versus an average FBS team'],
               record:['Track Record','Published before kickoff, verifiable by anyone'],
               sched:['Schedule','Upcoming games and posted numbers'],
-              matchup:['Matchup','Any two teams, priced by the model']};
+              matchup:['Matchup & Injuries','Any two teams, with availability you control']};
 
 let META={}, RATINGS=[], BETS=[], SCHED=[], COMP=null;
 
@@ -235,6 +259,52 @@ function fav(margin, home, away){
   if(Math.abs(margin) < 0.05) return {name:'Pick&rsquo;em', by:0};
   return margin>0 ? {name:home, by:margin} : {name:away, by:-margin};
 }
+
+// ---- injury adjuster -------------------------------------------------------
+// Mirrors app.R's calc exactly:
+//     adjusted = base - (points out on HOME) + (points out on AWAY)
+// An away team losing starters helps the home side, hence the sign flip.
+// This is a WHAT-IF layer: it never touches the published picks or the record.
+let PLAYERS=null, OUT={home:new Set(), away:new Set()};
+
+async function ensurePlayers(){
+  if(PLAYERS) return PLAYERS;
+  const d=await j('data/players.json');
+  PLAYERS = (d && d.teams) ? d.teams : {};
+  return PLAYERS;
+}
+function lostPoints(side){
+  const team=document.getElementById(side==='home'?'homeSel':'awaySel').value;
+  const roster=(PLAYERS&&PLAYERS[team])||[];
+  let t=0;
+  OUT[side].forEach(n=>{ const p=roster.find(x=>x.n===n); if(p) t+=(+p.v||0); });
+  return t;
+}
+function renderRoster(side){
+  const sel=document.getElementById(side==='home'?'homeSel':'awaySel');
+  const team=sel.value;
+  const box=document.getElementById(side==='home'?'homeRoster':'awayRoster');
+  document.getElementById(side==='home'?'homeLab':'awayLab').textContent=
+    (side==='home'?'Home — ':'Away — ')+team;
+  const roster=(PLAYERS&&PLAYERS[team])||[];
+  if(!roster.length){ box.innerHTML='<div class="note">No starter values for this team.</div>'; return; }
+  box.innerHTML=roster.map(p=>{
+    const on=OUT[side].has(p.n);
+    return `<label class="prow${on?' out':''}">
+      <input type="checkbox" data-side="${side}" data-n="${esc(p.n)}"${on?' checked':''}>
+      <span class="pp">${esc(p.p)}</span>
+      <span class="pn">${esc(p.n)}</span>
+      <span class="pv">${(+p.v).toFixed(1)}</span></label>`;
+  }).join('');
+  box.querySelectorAll('input[type=checkbox]').forEach(cb=>
+    cb.addEventListener('change',e=>{
+      const sd=e.target.dataset.side, nm=e.target.dataset.n;
+      if(e.target.checked) OUT[sd].add(nm); else OUT[sd].delete(nm);
+      e.target.closest('.prow').classList.toggle('out', e.target.checked);
+      renderMatchup();
+    }));
+}
+
 function renderMatchup(){
   const home=document.getElementById('homeSel').value,
         away=document.getElementById('awaySel').value,
@@ -243,16 +313,21 @@ function renderMatchup(){
   if(home===away){ el.innerHTML='<div class="empty">Pick two different teams.</div>'; return; }
   const m=predict(home,away,neu);
   if(m==null){ el.innerHTML='<div class="empty">No rating available for one of those teams.</div>'; return; }
-  const f=fav(m,home,away);
-  const wp=winProb(m); const wpShown = wp==null?null:(m>=0?wp:1-wp);
+  const outH=lostPoints('home'), outA=lostPoints('away');
+  const adj=m - outH + outA;                 // same sign convention as app.R
+  const f=fav(adj,home,away);
+  const wp=winProb(adj); const wpShown = wp==null?null:(adj>=0?wp:1-wp);
   el.innerHTML=
     `<div class="r-fav">${f.by?esc(f.name)+' by '+f.by.toFixed(1):'Pick&rsquo;em'}</div>
      <div class="r-sub">${esc(away)} at ${esc(home)}${neu?' &middot; neutral site':''}</div>
      <div class="r-grid">
-       <div><div class="r-k">Model line</div><div class="r-v">${m>0?'-':'+'}${Math.abs(m).toFixed(1)}</div></div>
+       <div><div class="r-k">Model line</div><div class="r-v">${adj>0?'-':'+'}${Math.abs(adj).toFixed(1)}</div></div>
        <div><div class="r-k">Win prob</div><div class="r-v">${wpShown==null?'—':(100*wpShown).toFixed(0)+'%'}</div></div>
        <div><div class="r-k">Home field</div><div class="r-v">${neu?'0.0':'+'+COMP.home_bonus.toFixed(1)}</div></div>
-     </div>`;
+     </div>
+     ${(outH||outA)?`<div class="adjnote">Adjusted for availability: healthy line was
+        ${m>0?'-':'+'}${Math.abs(m).toFixed(1)} &middot; out ${esc(home)} ${outH.toFixed(1)} pts,
+        ${esc(away)} ${outA.toFixed(1)} pts. Your what-if only &mdash; not part of the record.</div>`:''}`;
 }
 function initMatchup(){
   if(!COMP||!COMP.teams||!COMP.teams.length) return;
@@ -264,9 +339,19 @@ function initMatchup(){
   if(SCHED.length){ hs.value=SCHED[0].home; as.value=SCHED[0].away;
     document.getElementById('neutralChk').checked=!!SCHED[0].neutral; }
   else { hs.value=names[0]; as.value=names[1]||names[0]; }
-  [hs,as,document.getElementById('neutralChk')].forEach(e=>
-    e.addEventListener('change',renderMatchup));
+  const redraw=async()=>{ await ensurePlayers();
+    OUT.home.clear(); OUT.away.clear();      // a different team means a different roster
+    // Neutral must follow the pair, not linger from the previous matchup: it
+    // stayed ticked from the default game and mislabelled a home game as neutral.
+    const g=SCHED.find(x=>x.home===hs.value && x.away===as.value);
+    document.getElementById('neutralChk').checked = g ? !!g.neutral : false;
+    renderRoster('home'); renderRoster('away'); renderMatchup(); };
+  hs.addEventListener('change', redraw);
+  as.addEventListener('change', redraw);
+  document.getElementById('neutralChk').addEventListener('change', renderMatchup);
   renderMatchup();
+  // Rosters load lazily so the front page does not pay for 127 KB it may not need.
+  ensurePlayers().then(()=>{ renderRoster('home'); renderRoster('away'); });
 }
 
 function show(v){
