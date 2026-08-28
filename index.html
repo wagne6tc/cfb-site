@@ -123,6 +123,12 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .prow.out .pv{color:var(--loss);font-weight:700}
 .adjnote{font-size:12.5px;color:var(--warn);margin-top:9px}
 @media(max-width:720px){.rosters{grid-template-columns:1fr}}
+.mkt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;
+  margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.play-yes{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:800;padding:4px 10px;border-radius:6px;background:rgba(61,220,132,.15);color:var(--accent)}
+.play-no{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:800;padding:4px 10px;border-radius:6px;background:rgba(139,147,161,.14);color:var(--muted)}
 .view{display:none} .view.on{display:block}
 .iframe-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
   background:#fff;height:78vh}
@@ -185,6 +191,12 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
           <label class="mfield"><span class="mlab">Home</span>
             <select class="sel" id="homeSel"></select></label>
           <label class="mcheck"><input type="checkbox" id="neutralChk"> Neutral site</label>
+        </div>
+        <div class="mrow" style="margin-top:14px">
+          <label class="mfield" style="flex:0 1 190px"><span class="mlab">Market spread (home)</span>
+            <input class="sel" id="spreadIn" type="number" step="0.5" placeholder="e.g. -7.5"></label>
+          <label class="mcheck"><input type="checkbox" id="useLineChk" checked> Use actual line</label>
+          <span class="note" id="lineNote" style="padding-bottom:10px"></span>
         </div>
       </div>
       <div class="panel result" id="mResult"></div>
@@ -305,6 +317,38 @@ function renderRoster(side){
     }));
 }
 
+
+// ---- market line and edge --------------------------------------------------
+// Same semantics as app.R: mkt = -spread (home frame), edge = ADJUSTED margin
+// minus mkt, so availability toggles feed straight into it. Star bands are
+// app.R's star_rating(): tighter in weeks 1-4, where the model is not proven.
+function starsFor(edge, week){
+  const e=Math.abs(edge); if(!isFinite(e)) return 0;
+  if(!(week>=5)){ return e>=10?3 : e>=7?2 : e>=4?1 : 0; }
+  return e>=12?5 : e>=10?4 : e>=7?3 : e>=4?2 : e>=2.5?1 : 0;
+}
+function scheduledGame(home, away){
+  return SCHED.find(x=>(x.home===home&&x.away===away)||(x.home===away&&x.away===home));
+}
+// The stored spread is from the SCHEDULED home team's frame. If the user has
+// the pair the other way round, it must be flipped or the edge inverts.
+function lineFor(home, away){
+  const g=scheduledGame(home,away);
+  if(!g || !isFinite(+g.spread)) return null;
+  return (g.home===home) ? +g.spread : -(+g.spread);
+}
+function applyActualLine(){
+  const home=document.getElementById('homeSel').value,
+        away=document.getElementById('awaySel').value,
+        chk=document.getElementById('useLineChk'),
+        inp=document.getElementById('spreadIn'),
+        note=document.getElementById('lineNote');
+  if(!chk.checked){ note.textContent='Enter a spread from the home team’s side.'; return; }
+  const L=lineFor(home,away);
+  if(L==null){ inp.value=''; note.textContent='No opening line for that matchup.'; }
+  else { inp.value=L.toFixed(1); note.textContent='Opening line, as recorded.'; }
+}
+
 function renderMatchup(){
   const home=document.getElementById('homeSel').value,
         away=document.getElementById('awaySel').value,
@@ -317,6 +361,21 @@ function renderMatchup(){
   const adj=m - outH + outA;                 // same sign convention as app.R
   const f=fav(adj,home,away);
   const wp=winProb(adj); const wpShown = wp==null?null:(adj>=0?wp:1-wp);
+
+  const spr=parseFloat(document.getElementById('spreadIn').value);
+  let mktHTML='';
+  if(isFinite(spr)){
+    const mkt=-spr, edge=adj-mkt, st=starsFor(edge, META.week), play=st>0;
+    const mf=fav(mkt,home,away);
+    mktHTML=`<div class="mkt-grid">
+      <div><div class="r-k">Market</div><div class="r-v">${mf.by?esc(mf.name)+' '+mf.by.toFixed(1):'Pick&rsquo;em'}</div></div>
+      <div><div class="r-k">Edge</div><div class="r-v" style="color:${play?'var(--accent)':'var(--ink)'}">${edge>0?'+':''}${edge.toFixed(1)}</div></div>
+      <div><div class="r-k">Play</div><div style="margin-top:6px">${
+        play?`<span class="play-yes">${esc(edge>0?home:away)}</span>
+              <div class="stars" style="font-size:19px;letter-spacing:3px;margin-top:7px">${starHTML(st, META.week>=5?5:3)}</div>`
+            :'<span class="play-no">No play</span>'}</div></div>
+    </div>`;
+  }
   el.innerHTML=
     `<div class="r-fav">${f.by?esc(f.name)+' by '+f.by.toFixed(1):'Pick&rsquo;em'}</div>
      <div class="r-sub">${esc(away)} at ${esc(home)}${neu?' &middot; neutral site':''}</div>
@@ -325,6 +384,7 @@ function renderMatchup(){
        <div><div class="r-k">Win prob</div><div class="r-v">${wpShown==null?'—':(100*wpShown).toFixed(0)+'%'}</div></div>
        <div><div class="r-k">Home field</div><div class="r-v">${neu?'0.0':'+'+COMP.home_bonus.toFixed(1)}</div></div>
      </div>
+     ${mktHTML}
      ${(outH||outA)?`<div class="adjnote">Adjusted for availability: healthy line was
         ${m>0?'-':'+'}${Math.abs(m).toFixed(1)} &middot; out ${esc(home)} ${outH.toFixed(1)} pts,
         ${esc(away)} ${outA.toFixed(1)} pts. Your what-if only &mdash; not part of the record.</div>`:''}`;
@@ -349,10 +409,15 @@ function initMatchup(){
     const g=SCHED.find(x=>(x.home===hs.value && x.away===as.value) ||
                           (x.home===as.value && x.away===hs.value));
     document.getElementById('neutralChk').checked = g ? !!g.neutral : false;
+    applyActualLine();
     renderRoster('home'); renderRoster('away'); renderMatchup(); };
   hs.addEventListener('change', redraw);
   as.addEventListener('change', redraw);
   document.getElementById('neutralChk').addEventListener('change', renderMatchup);
+  document.getElementById('spreadIn').addEventListener('input', renderMatchup);
+  document.getElementById('useLineChk').addEventListener('change', ()=>{
+    applyActualLine(); renderMatchup(); });
+  applyActualLine();
   renderMatchup();
   // Rosters load lazily so the front page does not pay for 127 KB it may not need.
   ensurePlayers().then(()=>{ renderRoster('home'); renderRoster('away'); });
@@ -370,9 +435,10 @@ function show(v){
 document.querySelectorAll('#nav .nav-item[data-v]').forEach(b=>
   b.addEventListener('click',()=>show(b.dataset.v)));
 
-function starHTML(n){
-  n=Math.max(0,Math.min(3,+n||0));
-  return '★'.repeat(n)+'<span class="dim">'+'★'.repeat(3-n)+'</span>';
+function starHTML(n, max){
+  max = max || 3;
+  n=Math.max(0,Math.min(max,+n||0));
+  return '★'.repeat(n)+'<span class="dim">'+'★'.repeat(max-n)+'</span>';
 }
 
 function renderBets(){
