@@ -343,7 +343,11 @@ function initMatchup(){
     OUT.home.clear(); OUT.away.clear();      // a different team means a different roster
     // Neutral must follow the pair, not linger from the previous matchup: it
     // stayed ticked from the default game and mislabelled a home game as neutral.
-    const g=SCHED.find(x=>x.home===hs.value && x.away===as.value);
+    // Match EITHER orientation: a neutral site is a property of the venue, not
+    // of which team you nominate as home, so swapping the pair must not quietly
+    // add a home-field bonus to a game played on neutral ground.
+    const g=SCHED.find(x=>(x.home===hs.value && x.away===as.value) ||
+                          (x.home===as.value && x.away===hs.value));
     document.getElementById('neutralChk').checked = g ? !!g.neutral : false;
     renderRoster('home'); renderRoster('away'); renderMatchup(); };
   hs.addEventListener('change', redraw);
