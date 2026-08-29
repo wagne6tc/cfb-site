@@ -130,6 +130,8 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   font-weight:800;padding:4px 10px;border-radius:6px;background:rgba(61,220,132,.15);color:var(--accent)}
 .play-no{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
   font-weight:800;padding:4px 10px;border-radius:6px;background:rgba(139,147,161,.14);color:var(--muted)}
+.early-note{font-size:10px;line-height:1.35;color:var(--dim);margin-top:7px;
+  letter-spacing:.01em;max-width:210px}
 .view{display:none} .view.on{display:block}
 .iframe-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
   background:#fff;height:78vh}
@@ -323,6 +325,8 @@ function renderRoster(side){
 // Same semantics as app.R: mkt = -spread (home frame), edge = ADJUSTED margin
 // minus mkt, so availability toggles feed straight into it. Star bands are
 // app.R's star_rating(): tighter in weeks 1-4, where the model is not proven.
+// Mirrors star_rating_of() in 00_config_2026.R. If the bands change there,
+// change them here too -- these are the only two copies.
 function starsFor(edge, week){
   const e=Math.abs(edge); if(!isFinite(e)) return 0;
   if(!(week>=5)){ return e>=10?3 : e>=7?2 : e>=4?1 : 0; }
@@ -375,7 +379,8 @@ function renderMatchup(){
           : esc(edge>0?home:away)+' '+Math.abs(edge).toFixed(1)}</div></div>
       <div><div class="r-k">Play</div><div style="margin-top:6px">${
         play?`<span class="play-yes">${esc(edge>0?home:away)}</span>
-              <div class="stars" style="font-size:19px;letter-spacing:3px;margin-top:7px">${starHTML(st, META.week>=5?5:3)}</div>`
+              <div class="stars" style="font-size:19px;letter-spacing:3px;margin-top:7px">${starHTML(st)}</div>
+              ${isEarly(META.week)?EARLY_NOTE:''}`
             :'<span class="play-no">No play</span>'}</div></div>
     </div>`;
   }
@@ -438,11 +443,17 @@ function show(v){
 document.querySelectorAll('#nav .nav-item[data-v]').forEach(b=>
   b.addEventListener('click',()=>show(b.dataset.v)));
 
-function starHTML(n, max){
-  max = max || 3;
-  n=Math.max(0,Math.min(max,+n||0));
-  return '★'.repeat(n)+'<span class="dim">'+'★'.repeat(max-n)+'</span>';
+// Always a 5-star scale so ratings are comparable at a glance; unearned stars
+// render grey. Weeks 1-4 top out at 3 by design -- the model is not validated
+// there -- which the scale makes visible rather than hiding behind a shorter row.
+const STAR_MAX = 5;
+function starHTML(n){
+  n=Math.max(0,Math.min(STAR_MAX,+n||0));
+  return '★'.repeat(n)+'<span class="dim">'+'★'.repeat(STAR_MAX-n)+'</span>';
 }
+// Shown under any early-season rating.
+const EARLY_NOTE = '<div class="early-note">Weeks 1&ndash;4 not validated, talent only</div>';
+function isEarly(week){ return !(week>=5); }
 
 function renderBets(){
   if(!BETS.length){
@@ -456,7 +467,8 @@ function renderBets(){
         <span class="gcard-badge">${b.validated?'validated':'free play'}</span></div>
       <div class="gcard-match">${esc(b.away)} at ${esc(b.home)}</div>
       <div class="gcard-pick">Pick <b>${esc(b.pick)}</b></div>
-      <div class="stars">${starHTML(b.stars)}</div></div>`;
+      <div class="stars">${starHTML(b.stars)}</div>
+      ${isEarly(META.week)?EARLY_NOTE:''}</div>`;
   let h='';
   if(sides.length)  h+=`<h2>Sides</h2><div class="cards">${sides.map(card).join('')}</div>`;
   h+='<h2>Totals</h2>'+(totals.length
