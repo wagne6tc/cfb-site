@@ -133,6 +133,28 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .early-note{font-size:10px;line-height:1.35;color:var(--dim);margin-top:7px;
   letter-spacing:.01em;max-width:210px}
 .gcard-when{font-size:11.5px;color:var(--dim);margin:-4px 0 8px;letter-spacing:.02em}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin-bottom:18px}
+.tier{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;display:flex;flex-direction:column;position:relative}
+.tier-hero{border-color:rgba(61,220,132,.45);box-shadow:0 0 0 1px rgba(61,220,132,.12)}
+.tier-flag{position:absolute;top:-9px;left:22px;font-size:9px;letter-spacing:.11em;
+  text-transform:uppercase;font-weight:800;background:var(--accent);color:#08120c;
+  padding:3px 9px;border-radius:5px}
+.tier-name{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800}
+.tier-price{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:6px 0 16px}
+.tier-price span{font-size:12.5px;font-weight:600;color:var(--dim);letter-spacing:0}
+.tier-list{list-style:none;padding:0;margin:0 0 20px;flex:1 1 auto}
+.tier-list li{font-size:13.5px;color:var(--muted);line-height:1.5;padding:7px 0 7px 22px;
+  position:relative;border-bottom:1px solid rgba(36,44,55,.55)}
+.tier-list li:last-child{border-bottom:none}
+.tier-list li:before{content:"¹3";position:absolute;left:0;top:7px;color:var(--accent);font-weight:800}
+.tier-list.plain li:before{content:"2"}
+.tier-btn{display:block;text-align:center;padding:11px 16px;border-radius:9px;
+  background:var(--accent);color:#08120c;font-weight:750;font-size:14px}
+.tier-btn-ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+.sub-h{font-size:14px;margin:0 0 9px;letter-spacing:-.01em}
+.tier-soon{background:rgba(139,147,161,.16)!important;color:var(--muted)!important;
+  border-color:var(--line)!important;cursor:default}
 .view{display:none} .view.on{display:block}
 .iframe-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
   background:#fff;height:78vh}
@@ -162,7 +184,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
       <button class="nav-item" data-v="record"><span class="ico">&#10003;</span>Track Record</button>
       <button class="nav-item" data-v="sched"><span class="ico">&#9678;</span>Schedule</button>
       <button class="nav-item" data-v="matchup"><span class="ico">&#9636;</span>Matchup &amp; Injuries</button>
-      <div class="nav-item soon"><span class="ico">&#9733;</span>Subscribe<span class="tag">soon</span></div>
+      <button class="nav-item" data-v="subscribe"><span class="ico">&#9733;</span>Subscribe</button>
     </nav>
     <div class="side-foot" id="foot"></div>
   </aside>
@@ -214,6 +236,68 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
       </div>
     </section>
 
+    <!-- SUBSCRIBE -->
+    <section class="view" id="v-subscribe">
+      <div class="tiers">
+        <div class="tier">
+          <div class="tier-name">Free</div>
+          <div class="tier-price">&pound;0<span>/ forever</span></div>
+          <ul class="tier-list">
+            <li>The week&rsquo;s <strong>free plays</strong> &mdash; one side and one total, published before kickoff</li>
+            <li><strong>Power ratings</strong> for all 138 teams, updated weekly</li>
+            <li>The <strong>full track record</strong>, wins and losses alike</li>
+            <li>Handicap <strong>one game a week</strong> with the injury tuner</li>
+            <li>A <strong>weekly email</strong> with how every pick did</li>
+          </ul>
+          <a class="tier-btn tier-btn-ghost" id="freeBtn" href="#" target="_blank" rel="noopener">Join free</a>
+        </div>
+
+        <div class="tier tier-hero">
+          <div class="tier-flag">Full access</div>
+          <div class="tier-name">Member</div>
+          <div class="tier-price" id="paidPrice">&mdash;<span>/ month or season</span></div>
+          <ul class="tier-list">
+            <li>Everything in Free</li>
+            <li><strong>Every validated pick</strong>, delivered before kickoff &mdash; not just the free one</li>
+            <li><strong>Unlimited</strong> injury tuner, any matchup, any week</li>
+            <li>Sides and totals, with the edge and confidence on each</li>
+          </ul>
+          <a class="tier-btn" id="paidBtn" href="#" target="_blank" rel="noopener">Become a member</a>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:6px">
+        <h3 class="sub-h">What the free plays are, and what they are not</h3>
+        <p class="note" style="margin:0 0 10px">
+          From week 2 the free tier is <strong>one side and one total</strong> a week. Members get the
+          full validated slate, which some weeks is more than that and some weeks fewer &mdash;
+          the model only plays what clears its thresholds, and a quiet week is a quiet week.
+        </p>
+        <p class="note" style="margin:0">
+          <strong>The record stays public either way.</strong> Every pick, free and members-only,
+          is published before kickoff, hash-chained, and graded in the open. What a
+          subscription buys is <em>timely access to the picks</em> &mdash; never access to how they did.
+          <a id="recLink" href="#" target="_blank" rel="noopener">See the record &rarr;</a>
+        </p>
+      </div>
+
+      <div class="panel">
+        <h3 class="sub-h">Your email</h3>
+        <ul class="tier-list plain">
+          <li>Signing up puts you on a <strong>weekly email</strong> with the record for the free plays and the validated picks.</li>
+          <li><strong>Your email is never sold, rented, or shared.</strong> No third-party advertisers, no data brokers, no list swaps.</li>
+          <li>It is used for the weekly results email and account notices. Nothing else.</li>
+          <li><strong>Unsubscribe from any email</strong>, in one click. Leaving the list does not affect a paid membership.</li>
+        </ul>
+      </div>
+
+      <p class="disc" style="margin-top:22px">
+        Recreational use only. This is not financial or betting advice and no outcome is
+        guaranteed. Past results do not predict future results. Bet only what you can afford
+        to lose, and check the laws where you live.
+      </p>
+    </section>
+
     <!-- POWER RATINGS -->
     <section class="view" id="v-power">
       <input class="search" id="teamSearch" placeholder="Filter teams…" autocomplete="off">
@@ -251,7 +335,8 @@ const TITLES={bets:['Best Bets','Free plays for the upcoming week'],
               power:['Power Ratings','Points versus an average FBS team'],
               record:['Track Record','Published before kickoff, verifiable by anyone'],
               sched:['Schedule','Upcoming games and posted numbers'],
-              matchup:['Matchup & Injuries','Any two teams, with availability you control']};
+              matchup:['Matchup & Injuries','Any two teams, with availability you control'],
+              subscribe:['Subscribe','What you get, and what happens to your email']};
 
 let META={}, RATINGS=[], BETS=[], SCHED=[], COMP=null;
 
@@ -276,6 +361,30 @@ function fav(margin, home, away){
   return margin>0 ? {name:home, by:margin} : {name:away, by:-margin};
 }
 
+
+// ---- free-tier tuner allowance ---------------------------------------------
+// HONEST LIMITATION: this is a courtesy limit, not a security boundary. It
+// lives in localStorage, so anyone who opens devtools or a private window is
+// past it in seconds. Real enforcement needs an account and a server check --
+// see the Subscribe page. It is here to make the tier boundary legible, not to
+// defend anything valuable. The genuinely valuable thing, the validated picks,
+// is protected by NOT BEING IN THIS SITE AT ALL.
+const TUNE_KEY='cfb_tune_week', TUNE_FREE=1;
+function tuneWeekKey(){ return (META.season||'')+'-'+(META.week||''); }
+function tuneUsed(){
+  try{ const v=JSON.parse(localStorage.getItem(TUNE_KEY)||'{}');
+       return v.wk===tuneWeekKey() ? (v.games||[]) : []; }catch(e){ return []; }
+}
+function tuneRecord(matchup){
+  try{ const g=tuneUsed(); if(g.includes(matchup)) return;
+       localStorage.setItem(TUNE_KEY, JSON.stringify({wk:tuneWeekKey(), games:g.concat([matchup])}));
+  }catch(e){}
+}
+function tuneAllowed(matchup){
+  const g=tuneUsed();
+  return g.includes(matchup) || g.length < TUNE_FREE;
+}
+
 // ---- injury adjuster -------------------------------------------------------
 // Mirrors app.R's calc exactly:
 //     adjusted = base - (points out on HOME) + (points out on AWAY)
@@ -297,6 +406,17 @@ function lostPoints(side){
   return t;
 }
 function renderRoster(side){
+  // Gate the roster panels on the free allowance for this week.
+  const mk = document.getElementById('awaySel').value+' at '+document.getElementById('homeSel').value;
+  if(!tuneAllowed(mk)){
+    const b=document.getElementById(side==='home'?'homeRoster':'awayRoster');
+    document.getElementById(side==='home'?'homeLab':'awayLab').textContent=
+      (side==='home'?'Home':'Away');
+    b.innerHTML='<div class="note">You have used this week&rsquo;s free matchup ('
+      +esc(tuneUsed()[0]||'')+').<br><br>Members tune any matchup, any week. '
+      +'<a href="#subscribe" data-go="subscribe">See membership &rarr;</a></div>';
+    return;
+  }
   const sel=document.getElementById(side==='home'?'homeSel':'awaySel');
   const team=sel.value;
   const box=document.getElementById(side==='home'?'homeRoster':'awayRoster');
@@ -315,6 +435,7 @@ function renderRoster(side){
   box.querySelectorAll('input[type=checkbox]').forEach(cb=>
     cb.addEventListener('change',e=>{
       const sd=e.target.dataset.side, nm=e.target.dataset.n;
+      tuneRecord(document.getElementById('awaySel').value+' at '+document.getElementById('homeSel').value);
       if(e.target.checked) OUT[sd].add(nm); else OUT[sd].delete(nm);
       e.target.closest('.prow').classList.toggle('out', e.target.checked);
       renderMatchup();
@@ -443,6 +564,13 @@ function show(v){
 }
 document.querySelectorAll('#nav .nav-item[data-v]').forEach(b=>
   b.addEventListener('click',()=>show(b.dataset.v)));
+// Delegated so links rendered later (the tuner's upgrade prompt) work without
+// an inline onclick -- nesting quotes inside a generated string broke the whole
+// script once, taking every view down with it.
+document.addEventListener('click', e=>{
+  const a=e.target.closest('[data-go]');
+  if(a){ e.preventDefault(); show(a.dataset.go); }
+});
 
 // Always a 5-star scale so ratings are comparable at a glance; unearned stars
 // render grey. Weeks 1-4 top out at 3 by design -- the model is not validated
@@ -538,6 +666,13 @@ function renderSched(){
 
   $('ledgerLink').href=META.ledger||'#';
   $('ledgerLink2').href=META.ledger||'#';
+  // Whop URLs and price come from meta.json so they can change without editing
+  // the page. Until they are set the buttons say so rather than dead-linking.
+  const rl=$('recLink'); if(rl) rl.href=META.ledger||'#';
+  const fb=$('freeBtn'), pb=$('paidBtn'), pp=$('paidPrice');
+  if(fb){ if(META.join_free){ fb.href=META.join_free; } else { fb.href='#'; fb.textContent='Coming soon'; fb.classList.add('tier-soon'); } }
+  if(pb){ if(META.join_paid){ pb.href=META.join_paid; } else { pb.href='#'; pb.textContent='Coming soon'; pb.classList.add('tier-soon'); } }
+  if(pp && META.price) pp.innerHTML=esc(META.price)+'<span>/ month or season</span>';
   $('foot').innerHTML=`Updated ${esc((META.generated||'').slice(0,10))}<br>Season ${esc(META.season||'')}`;
   renderBets(); renderPower(''); renderSched(); initMatchup();
   const h=(location.hash||'').replace('#','');
