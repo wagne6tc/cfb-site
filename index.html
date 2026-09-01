@@ -132,6 +132,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
   font-weight:800;padding:4px 10px;border-radius:6px;background:rgba(139,147,161,.14);color:var(--muted)}
 .early-note{font-size:10px;line-height:1.35;color:var(--dim);margin-top:7px;
   letter-spacing:.01em;max-width:210px}
+.gcard-when{font-size:11.5px;color:var(--dim);margin:-4px 0 8px;letter-spacing:.02em}
 .view{display:none} .view.on{display:block}
 .iframe-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
   background:#fff;height:78vh}
@@ -447,6 +448,16 @@ document.querySelectorAll('#nav .nav-item[data-v]').forEach(b=>
 // render grey. Weeks 1-4 top out at 3 by design -- the model is not validated
 // there -- which the scale makes visible rather than hiding behind a shorter row.
 const STAR_MAX = 5;
+// "2026-09-05" -> "Sat 5 Sep". Parsed as UTC so the date cannot slip a day for
+// a viewer west of the line: a bare yyyy-mm-dd is UTC midnight, and rendering
+// that in local time can land on the previous evening.
+function fmtDate(d){
+  if(!d) return '';
+  const m=String(d).match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return String(d);
+  const dt=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));
+  return dt.toLocaleDateString('en-US',
+    {weekday:'short', month:'short', day:'numeric', timeZone:'UTC'});
+}
 function starHTML(n){
   n=Math.max(0,Math.min(STAR_MAX,+n||0));
   return '★'.repeat(n)+'<span class="dim">'+'★'.repeat(STAR_MAX-n)+'</span>';
@@ -466,6 +477,7 @@ function renderBets(){
       <div class="gcard-top"><span class="gcard-kind">${esc(b.kind)}</span>
         <span class="gcard-badge">${b.validated?'validated':'free play'}</span></div>
       <div class="gcard-match">${esc(b.away)} at ${esc(b.home)}</div>
+      ${b.kickoff?`<div class="gcard-when">${esc(fmtDate(b.kickoff))}</div>`:''}
       <div class="gcard-pick">Pick <b>${esc(b.pick)}</b></div>
       <div class="stars">${starHTML(b.stars)}</div>
       ${isEarly(META.week)?EARLY_NOTE:''}</div>`;
