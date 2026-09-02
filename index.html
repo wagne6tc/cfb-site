@@ -155,6 +155,11 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .sub-h{font-size:14px;margin:0 0 9px;letter-spacing:-.01em}
 .tier-soon{background:rgba(139,147,161,.16)!important;color:var(--muted)!important;
   border-color:var(--line)!important;cursor:default}
+.locked{text-align:center;padding:44px 26px}
+.locked-icon{font-size:30px;color:var(--accent);opacity:.85;margin-bottom:10px}
+.locked-h{font-size:18px;margin:0 0 10px;letter-spacing:-.01em}
+.locked-p{max-width:52ch;margin:0 auto 22px}
+.locked-btn{display:inline-block;padding:11px 26px}
 .view{display:none} .view.on{display:block}
 .iframe-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
   background:#fff;height:78vh}
@@ -208,94 +213,19 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
       </div>
     </section>
 
-    <!-- MATCHUP -->
+    <!-- MATCHUP (members) -->
     <section class="view" id="v-matchup">
-      <div class="panel">
-        <div class="mrow">
-          <label class="mfield"><span class="mlab">Away</span>
-            <select class="sel" id="awaySel"></select></label>
-          <label class="mfield"><span class="mlab">Home</span>
-            <select class="sel" id="homeSel"></select></label>
-          <label class="mcheck"><input type="checkbox" id="neutralChk"> Neutral site</label>
-        </div>
-        <div class="mrow" style="margin-top:14px">
-          <label class="mfield" style="flex:0 1 190px"><span class="mlab">Market spread (home)</span>
-            <input class="sel" id="spreadIn" type="number" step="0.5" placeholder="e.g. -7.5"></label>
-          <label class="mcheck"><input type="checkbox" id="useLineChk" checked> Use actual line</label>
-          <span class="note" id="lineNote" style="padding-bottom:10px"></span>
-        </div>
-      </div>
-      <div class="panel result" id="mResult"></div>
-      <h2>Availability</h2>
-      <p class="note" id="injNote">Tick a starter to price the game without them.
-        Injuries are not in the model &mdash; this is your adjustment, and it is
-        never part of the published record.</p>
-      <div class="rosters">
-        <div class="panel roster"><div class="rlab" id="awayLab">Away</div><div id="awayRoster"></div></div>
-        <div class="panel roster"><div class="rlab" id="homeLab">Home</div><div id="homeRoster"></div></div>
-      </div>
-    </section>
-
-    <!-- SUBSCRIBE -->
-    <section class="view" id="v-subscribe">
-      <div class="tiers">
-        <div class="tier">
-          <div class="tier-name">Free</div>
-          <div class="tier-price">&pound;0<span>/ forever</span></div>
-          <ul class="tier-list">
-            <li>The week&rsquo;s <strong>free plays</strong> &mdash; one side and one total, published before kickoff</li>
-            <li><strong>Power ratings</strong> for all 138 teams, updated weekly</li>
-            <li>The <strong>full track record</strong>, wins and losses alike</li>
-            <li>Handicap <strong>one game a week</strong> with the injury tuner</li>
-            <li>A <strong>weekly email</strong> with how every pick did</li>
-          </ul>
-          <a class="tier-btn tier-btn-ghost" id="freeBtn" href="#" target="_blank" rel="noopener">Join free</a>
-        </div>
-
-        <div class="tier tier-hero">
-          <div class="tier-flag">Full access</div>
-          <div class="tier-name">Member</div>
-          <div class="tier-price" id="paidPrice">&mdash;<span>/ month or season</span></div>
-          <ul class="tier-list">
-            <li>Everything in Free</li>
-            <li><strong>Every validated pick</strong>, delivered before kickoff &mdash; not just the free one</li>
-            <li><strong>Unlimited</strong> injury tuner, any matchup, any week</li>
-            <li>Sides and totals, with the edge and confidence on each</li>
-          </ul>
-          <a class="tier-btn" id="paidBtn" href="#" target="_blank" rel="noopener">Become a member</a>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-top:6px">
-        <h3 class="sub-h">What the free plays are, and what they are not</h3>
-        <p class="note" style="margin:0 0 10px">
-          From week 2 the free tier is <strong>one side and one total</strong> a week. Members get the
-          full validated slate, which some weeks is more than that and some weeks fewer &mdash;
-          the model only plays what clears its thresholds, and a quiet week is a quiet week.
+      <div class="panel locked">
+        <div class="locked-icon">&#9733;</div>
+        <h3 class="locked-h">The matchup calculator is a member feature</h3>
+        <p class="note locked-p">
+          Price any two teams, at any venue, with the model's own numbers &mdash; then
+          take starters out and watch the line move. It is the same engine behind the
+          published picks, which is exactly why it is not free: a calculator that
+          prices every game <em>is</em> the pick slate.
         </p>
-        <p class="note" style="margin:0">
-          <strong>The record stays public either way.</strong> Every pick, free and members-only,
-          is published before kickoff, hash-chained, and graded in the open. What a
-          subscription buys is <em>timely access to the picks</em> &mdash; never access to how they did.
-          <a id="recLink" href="#" target="_blank" rel="noopener">See the record &rarr;</a>
-        </p>
+        <a class="tier-btn locked-btn" href="#subscribe" data-go="subscribe">See membership &rarr;</a>
       </div>
-
-      <div class="panel">
-        <h3 class="sub-h">Your email</h3>
-        <ul class="tier-list plain">
-          <li>Signing up puts you on a <strong>weekly email</strong> with the record for the free plays and the validated picks.</li>
-          <li><strong>Your email is never sold, rented, or shared.</strong> No third-party advertisers, no data brokers, no list swaps.</li>
-          <li>It is used for the weekly results email and account notices. Nothing else.</li>
-          <li><strong>Unsubscribe from any email</strong>, in one click. Leaving the list does not affect a paid membership.</li>
-        </ul>
-      </div>
-
-      <p class="disc" style="margin-top:22px">
-        Recreational use only. This is not financial or betting advice and no outcome is
-        guaranteed. Past results do not predict future results. Bet only what you can afford
-        to lose, and check the laws where you live.
-      </p>
     </section>
 
     <!-- POWER RATINGS -->
@@ -338,220 +268,13 @@ const TITLES={bets:['Best Bets','Free plays for the upcoming week'],
               matchup:['Matchup & Injuries','Any two teams, with availability you control'],
               subscribe:['Subscribe','What you get, and what happens to your email']};
 
-let META={}, RATINGS=[], BETS=[], SCHED=[], COMP=null;
-
-// The model is exactly additive and antisymmetric in the two teams, so a
-// prediction is one subtraction:
-//     pred = V[home] - V[away] + (neutral ? 0 : home_bonus)
-// V ships already converted to points, so no coefficient is ever in the page.
-function predict(home, away, neutral){
-  if(!COMP || !COMP.V) return null;
-  const vh=COMP.V[home], va=COMP.V[away];
-  if(vh==null||va==null) return null;
-  return vh - va + (neutral ? 0 : COMP.home_bonus);
-}
-// Win probability comes from a sampled curve, not from coefficients.
-function winProb(margin){
-  if(!COMP||!COMP.wp||!COMP.wp.length) return null;
-  const i=Math.round((margin - COMP.wp_from)/COMP.wp_step);
-  return COMP.wp[Math.max(0, Math.min(COMP.wp.length-1, i))];
-}
-function fav(margin, home, away){
-  if(Math.abs(margin) < 0.05) return {name:'Pick&rsquo;em', by:0};
-  return margin>0 ? {name:home, by:margin} : {name:away, by:-margin};
-}
-
-
-// ---- free-tier tuner allowance ---------------------------------------------
-// HONEST LIMITATION: this is a courtesy limit, not a security boundary. It
-// lives in localStorage, so anyone who opens devtools or a private window is
-// past it in seconds. Real enforcement needs an account and a server check --
-// see the Subscribe page. It is here to make the tier boundary legible, not to
-// defend anything valuable. The genuinely valuable thing, the validated picks,
-// is protected by NOT BEING IN THIS SITE AT ALL.
-const TUNE_KEY='cfb_tune_week', TUNE_FREE=1;
-function tuneWeekKey(){ return (META.season||'')+'-'+(META.week||''); }
-function tuneUsed(){
-  try{ const v=JSON.parse(localStorage.getItem(TUNE_KEY)||'{}');
-       return v.wk===tuneWeekKey() ? (v.games||[]) : []; }catch(e){ return []; }
-}
-function tuneRecord(matchup){
-  try{ const g=tuneUsed(); if(g.includes(matchup)) return;
-       localStorage.setItem(TUNE_KEY, JSON.stringify({wk:tuneWeekKey(), games:g.concat([matchup])}));
-  }catch(e){}
-}
-function tuneAllowed(matchup){
-  const g=tuneUsed();
-  return g.includes(matchup) || g.length < TUNE_FREE;
-}
-
-// ---- injury adjuster -------------------------------------------------------
-// Mirrors app.R's calc exactly:
-//     adjusted = base - (points out on HOME) + (points out on AWAY)
-// An away team losing starters helps the home side, hence the sign flip.
-// This is a WHAT-IF layer: it never touches the published picks or the record.
-let PLAYERS=null, OUT={home:new Set(), away:new Set()};
-
-async function ensurePlayers(){
-  if(PLAYERS) return PLAYERS;
-  const d=await j('data/players.json');
-  PLAYERS = (d && d.teams) ? d.teams : {};
-  return PLAYERS;
-}
-function lostPoints(side){
-  const team=document.getElementById(side==='home'?'homeSel':'awaySel').value;
-  const roster=(PLAYERS&&PLAYERS[team])||[];
-  let t=0;
-  OUT[side].forEach(n=>{ const p=roster.find(x=>x.n===n); if(p) t+=(+p.v||0); });
-  return t;
-}
-function renderRoster(side){
-  // Gate the roster panels on the free allowance for this week.
-  const mk = document.getElementById('awaySel').value+' at '+document.getElementById('homeSel').value;
-  if(!tuneAllowed(mk)){
-    const b=document.getElementById(side==='home'?'homeRoster':'awayRoster');
-    document.getElementById(side==='home'?'homeLab':'awayLab').textContent=
-      (side==='home'?'Home':'Away');
-    b.innerHTML='<div class="note">You have used this week&rsquo;s free matchup ('
-      +esc(tuneUsed()[0]||'')+').<br><br>Members tune any matchup, any week. '
-      +'<a href="#subscribe" data-go="subscribe">See membership &rarr;</a></div>';
-    return;
-  }
-  const sel=document.getElementById(side==='home'?'homeSel':'awaySel');
-  const team=sel.value;
-  const box=document.getElementById(side==='home'?'homeRoster':'awayRoster');
-  document.getElementById(side==='home'?'homeLab':'awayLab').textContent=
-    (side==='home'?'Home — ':'Away — ')+team;
-  const roster=(PLAYERS&&PLAYERS[team])||[];
-  if(!roster.length){ box.innerHTML='<div class="note">No starter values for this team.</div>'; return; }
-  box.innerHTML=roster.map(p=>{
-    const on=OUT[side].has(p.n);
-    return `<label class="prow${on?' out':''}">
-      <input type="checkbox" data-side="${side}" data-n="${esc(p.n)}"${on?' checked':''}>
-      <span class="pp">${esc(p.p)}</span>
-      <span class="pn">${esc(p.n)}</span>
-      <span class="pv">${(+p.v).toFixed(1)}</span></label>`;
-  }).join('');
-  box.querySelectorAll('input[type=checkbox]').forEach(cb=>
-    cb.addEventListener('change',e=>{
-      const sd=e.target.dataset.side, nm=e.target.dataset.n;
-      tuneRecord(document.getElementById('awaySel').value+' at '+document.getElementById('homeSel').value);
-      if(e.target.checked) OUT[sd].add(nm); else OUT[sd].delete(nm);
-      e.target.closest('.prow').classList.toggle('out', e.target.checked);
-      renderMatchup();
-    }));
-}
-
-
-// ---- market line and edge --------------------------------------------------
-// Same semantics as app.R: mkt = -spread (home frame), edge = ADJUSTED margin
-// minus mkt, so availability toggles feed straight into it. Star bands are
-// app.R's star_rating(): tighter in weeks 1-4, where the model is not proven.
-// Mirrors star_rating_of() in 00_config_2026.R. If the bands change there,
-// change them here too -- these are the only two copies.
-function starsFor(edge, week){
-  const e=Math.abs(edge); if(!isFinite(e)) return 0;
-  if(!(week>=5)){ return e>=10?3 : e>=7?2 : e>=4?1 : 0; }
-  return e>=12?5 : e>=10?4 : e>=7?3 : e>=4?2 : e>=2.5?1 : 0;
-}
-function scheduledGame(home, away){
-  return SCHED.find(x=>(x.home===home&&x.away===away)||(x.home===away&&x.away===home));
-}
+let META={}, RATINGS=[], BETS=[], SCHED=[];
+// The matchup calculator lived here. It was removed, not hidden: shipping the
+// per-team point values it needs would let anyone reconstruct every pick, which
+// is the paid product. It is a member feature now, served elsewhere.
 // The stored spread is from the SCHEDULED home team's frame. If the user has
 // the pair the other way round, it must be flipped or the edge inverts.
-function lineFor(home, away){
-  const g=scheduledGame(home,away);
-  if(!g || !isFinite(+g.spread)) return null;
-  return (g.home===home) ? +g.spread : -(+g.spread);
-}
-function applyActualLine(){
-  const home=document.getElementById('homeSel').value,
-        away=document.getElementById('awaySel').value,
-        chk=document.getElementById('useLineChk'),
-        inp=document.getElementById('spreadIn'),
-        note=document.getElementById('lineNote');
-  if(!chk.checked){ note.textContent='Enter a spread from the home team’s side.'; return; }
-  const L=lineFor(home,away);
-  if(L==null){ inp.value=''; note.textContent='No opening line for that matchup.'; }
-  else { inp.value=L.toFixed(1); note.textContent='Opening line, as recorded.'; }
-}
 
-function renderMatchup(){
-  const home=document.getElementById('homeSel').value,
-        away=document.getElementById('awaySel').value,
-        neu=document.getElementById('neutralChk').checked;
-  const el=document.getElementById('mResult');
-  if(home===away){ el.innerHTML='<div class="empty">Pick two different teams.</div>'; return; }
-  const m=predict(home,away,neu);
-  if(m==null){ el.innerHTML='<div class="empty">No rating available for one of those teams.</div>'; return; }
-  const outH=lostPoints('home'), outA=lostPoints('away');
-  const adj=m - outH + outA;                 // same sign convention as app.R
-  const f=fav(adj,home,away);
-  const wp=winProb(adj); const wpShown = wp==null?null:(adj>=0?wp:1-wp);
-
-  const spr=parseFloat(document.getElementById('spreadIn').value);
-  let mktHTML='';
-  if(isFinite(spr)){
-    const mkt=-spr, edge=adj-mkt, st=starsFor(edge, META.week), play=st>0;
-    const mf=fav(mkt,home,away);
-    mktHTML=`<div class="mkt-grid">
-      <div><div class="r-k">Market</div><div class="r-v">${mf.by?esc(mf.name)+' '+mf.by.toFixed(1):'Pick&rsquo;em'}</div></div>
-      <div><div class="r-k">Edge</div><div class="r-v edge-v" style="color:${play?'var(--accent)':'var(--ink)'}">${
-        Math.abs(edge)<0.05 ? 'None'
-          : esc(edge>0?home:away)+' '+Math.abs(edge).toFixed(1)}</div></div>
-      <div><div class="r-k">Play</div><div style="margin-top:6px">${
-        play?`<span class="play-yes">${esc(edge>0?home:away)}</span>
-              <div class="stars" style="font-size:19px;letter-spacing:3px;margin-top:7px">${starHTML(st)}</div>
-              ${isEarly(META.week)?EARLY_NOTE:''}`
-            :'<span class="play-no">No play</span>'}</div></div>
-    </div>`;
-  }
-  el.innerHTML=
-    `<div class="r-fav">${f.by?esc(f.name)+' by '+f.by.toFixed(1):'Pick&rsquo;em'}</div>
-     <div class="r-sub">${esc(away)} at ${esc(home)}${neu?' &middot; neutral site':''}</div>
-     <div class="r-grid">
-       <div><div class="r-k">Model line</div><div class="r-v">${adj>0?'-':'+'}${Math.abs(adj).toFixed(1)}</div></div>
-       <div><div class="r-k">Win prob</div><div class="r-v">${wpShown==null?'—':(100*wpShown).toFixed(0)+'%'}</div></div>
-       <div><div class="r-k">Home field</div><div class="r-v">${neu?'0.0':'+'+COMP.home_bonus.toFixed(1)}</div></div>
-     </div>
-     ${mktHTML}
-     ${(outH||outA)?`<div class="adjnote">Adjusted for availability: healthy line was
-        ${m>0?'-':'+'}${Math.abs(m).toFixed(1)} &middot; out ${esc(home)} ${outH.toFixed(1)} pts,
-        ${esc(away)} ${outA.toFixed(1)} pts. Your what-if only &mdash; not part of the record.</div>`:''}`;
-}
-function initMatchup(){
-  if(!COMP||!COMP.teams||!COMP.teams.length) return;
-  const names=COMP.teams.map(t=>t.team).sort((a,b)=>a.localeCompare(b));
-  const opts=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
-  const hs=document.getElementById('homeSel'), as=document.getElementById('awaySel');
-  hs.innerHTML=opts; as.innerHTML=opts;
-  // Default to a real upcoming game so the view is never empty on arrival.
-  if(SCHED.length){ hs.value=SCHED[0].home; as.value=SCHED[0].away;
-    document.getElementById('neutralChk').checked=!!SCHED[0].neutral; }
-  else { hs.value=names[0]; as.value=names[1]||names[0]; }
-  const redraw=async()=>{ await ensurePlayers();
-    OUT.home.clear(); OUT.away.clear();      // a different team means a different roster
-    // Neutral must follow the pair, not linger from the previous matchup: it
-    // stayed ticked from the default game and mislabelled a home game as neutral.
-    // Match EITHER orientation: a neutral site is a property of the venue, not
-    // of which team you nominate as home, so swapping the pair must not quietly
-    // add a home-field bonus to a game played on neutral ground.
-    const g=SCHED.find(x=>(x.home===hs.value && x.away===as.value) ||
-                          (x.home===as.value && x.away===hs.value));
-    document.getElementById('neutralChk').checked = g ? !!g.neutral : false;
-    applyActualLine();
-    renderRoster('home'); renderRoster('away'); renderMatchup(); };
-  hs.addEventListener('change', redraw);
-  as.addEventListener('change', redraw);
-  document.getElementById('neutralChk').addEventListener('change', renderMatchup);
-  document.getElementById('spreadIn').addEventListener('input', renderMatchup);
-  document.getElementById('useLineChk').addEventListener('change', ()=>{
-    applyActualLine(); renderMatchup(); });
-  applyActualLine();
-  renderMatchup();
-  // Rosters load lazily so the front page does not pay for 127 KB it may not need.
-  ensurePlayers().then(()=>{ renderRoster('home'); renderRoster('away'); });
-}
 
 function show(v){
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on', s.id==='v-'+v));
@@ -622,11 +345,8 @@ function renderPower(filter){
   const rows=RATINGS.filter(r=>!f||r.team.toLowerCase().includes(f));
   if(!rows.length){ $('powerBody').innerHTML='<div class="empty">No teams match that filter.</div>'; return; }
   $('powerBody').innerHTML=`<table><thead><tr>
-      <th style="width:52px">Rank</th><th>Team</th>
-      <th class="num" style="text-align:right">Rating</th></tr></thead><tbody>`
-    + rows.map(r=>`<tr><td class="num rk">${r.rank}</td><td>${esc(r.team)}</td>
-        <td class="num ${r.rating>=0?'pos':'neg'}" style="text-align:right;font-weight:700">
-        ${r.rating>0?'+':''}${r.rating.toFixed(1)}</td></tr>`).join('')
+      <th style="width:52px">Rank</th><th>Team</th></tr></thead><tbody>`
+    + rows.map(r=>`<tr><td class="num rk">${r.rank}</td><td>${esc(r.team)}</td></tr>`).join('')
     + '</tbody></table>';
 }
 $('teamSearch').addEventListener('input',e=>renderPower(e.target.value));
@@ -641,14 +361,13 @@ function renderSched(){
 }
 
 (async function(){
-  const [meta,ratings,bets,sched,comp]=await Promise.all(
+  // components.json and players.json are deliberately NOT fetched: they are not
+  // published. Together with the market lines they reproduce every prediction
+  // exactly, which is the product.
+  const [meta,ratings,bets,sched]=await Promise.all(
     [j('data/meta.json'),j('data/ratings.json'),j('data/bestbets.json'),
-     j('data/schedule.json'),j('data/components.json')]);
+     j('data/schedule.json')]);
   META=meta||{}; RATINGS=ratings||[]; BETS=bets||[]; SCHED=sched||[];
-  if(comp && comp.teams){
-    COMP=comp;
-    COMP.V=Object.fromEntries(comp.teams.map(t=>[t.team,t.v]));
-  }
 
   $('kpis').innerHTML=
      `<div class="kpi"><div class="kpi-l">Margin error</div>
@@ -674,7 +393,7 @@ function renderSched(){
   if(pb){ if(META.join_paid){ pb.href=META.join_paid; } else { pb.href='#'; pb.textContent='Coming soon'; pb.classList.add('tier-soon'); } }
   if(pp && META.price) pp.innerHTML=esc(META.price)+'<span>/ month or season</span>';
   $('foot').innerHTML=`Updated ${esc((META.generated||'').slice(0,10))}<br>Season ${esc(META.season||'')}`;
-  renderBets(); renderPower(''); renderSched(); initMatchup();
+  renderBets(); renderPower(''); renderSched();
   const h=(location.hash||'').replace('#','');
   show(TITLES[h]?h:'bets');
 })();
